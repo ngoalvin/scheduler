@@ -5,6 +5,7 @@ import "components/Appointment";
 import Appointment from "components/Appointment";
 import axios from "axios";
 import {getAppointmentsForDay, getInterview, getInterviewersForDay} from "../helpers/selectors";
+import { resolvePlugin } from "@babel/core";
 
 export default function Application(props) {
 
@@ -14,25 +15,56 @@ export default function Application(props) {
     appointments: {},
     interviewers: {}
   })
+  
+  const bookInterview = function(id, interview) {
+    const appointment = {
+      ...state.appointments[id],
+      interview: { ...interview }
+    };
+    const appointments = {
+      ...state.appointments,
+      [id]: appointment
+    };
+    setState({
+      ...state,
+      appointments
+    });
+    console.log(interview)
+    console.log(id)
+    const {data} = axios({url: `api/appointments/${id}`, interview, method:'put'})
+    .then(res => console.log(res.status))
+    .catch(e => console.log(e))
+  }
+  // const bookInterview = function(id, interview) {
+  //   const appointment = {
+  //     ...state.appointments[id],
+  //     interview: { ...interview }
+  //   };
+  //   const newState = {...state};
+  //   newState.appointments[id] = appointment;
+  //   setState(newState)
+  //   console.log(state)
+  //   // axios.put(`/api/appointments/${id}`, appointment.interview)
+  //   // .then(res => console.log(res))
+  // }
 
+  
   const interviewersList = getInterviewersForDay(state, state.day);
-
+  
   const dailyAppointments = getAppointmentsForDay(state, state.day);
   const schedule = dailyAppointments.map((appointment) => {
     const interview = getInterview(state, appointment.interview);
-    console.log(appointment)
-    console.log(state.interviewers)
-
     return (
       <Appointment
       key = {appointment.id}
       {...appointment}
       interview = {interview}
       interviewers = {interviewersList}
+      bookInterview = {bookInterview}
       />
-    )
-  })
-
+      )
+    })
+    
 
     
   const setDay = day => setState({...state, day});
