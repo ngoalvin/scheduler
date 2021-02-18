@@ -10,7 +10,7 @@ import Form from "components/Appointment/Form";
 
 export default function Appointment (props) {
   
-  const { interview, time, id, interviewers } = props;
+  const { interview, time, id, interviewers, bookInterview } = props;
   const EMPTY = "EMPTY";
   const SHOW = "SHOW";
   const CREATE = "CREATE";  
@@ -22,15 +22,19 @@ export default function Appointment (props) {
   const onAdd = () => {
     transition("CREATE");
   }
-  console.log(interviewers, "HERE")
-  // const isInterview = mode === SHOW ? 
-  // <Show student={interview.student} interviewer={interview.interviewer.name} /> : 
-  // <Empty onAdd={onAdd} />;
+
+  const save = function(name, interviewer) {
+    const interview = {
+      student: name,
+      interviewer
+    };
+    bookInterview(props.id, interview)
+    transition("SHOW")
+  }
 
   return (
     <article className="appointment">
       <Header time={time}/>
-      {/* {isInterview} */}
       {mode === EMPTY && <Empty onAdd={onAdd} />}
       {mode === SHOW && (
         <Show
@@ -38,7 +42,7 @@ export default function Appointment (props) {
           interviewer={interview.interviewer.name}
         />
       )}
-      {mode === CREATE && <Form interviewers={[]} onCancel={back} />}
+      {mode === CREATE && <Form interviewers={interviewers} onCancel={back} onSave={save} />}
     </article>
   )
 }
