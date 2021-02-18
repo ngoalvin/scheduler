@@ -4,69 +4,51 @@ import DayList from "components/DayList"
 import "components/Appointment";
 import Appointment from "components/Appointment";
 import axios from "axios";
-
-const appointments = [
-  {
-    id: 1,
-    time: "12pm",
-  },
-  {
-    id: 2,
-    time: "1pm",
-    interview: {
-      student: "Lydia Miller-Jones",
-      interviewer: {
-        id: 1,
-        name: "Sylvia Palmer",
-        avatar: "https://i.imgur.com/LpaY82x.png",
-      }
-    }
-  },
-  {
-    id:3,
-    time:"3pm",
-    interview: {
-      student: "Alvin Ngo",
-      interviewer: {
-        id:2,
-        name: "Tori Malcolm",
-        avatar: "https://i.imgur.com/Nmx0Qxo.png"
-      }
-    }
-  }
-];
+import {getAppointmentsForDay, getInterview, getInterviewersForDay} from "../helpers/selectors";
 
 export default function Application(props) {
-
-  // const [day, setDay] = useState("Monday");
-  // const [days, setDays] = useState([]);
 
   const [state, setState] = useState({
     day: "Monday",
     days: [],
-    appointments: {}
+    appointments: {},
+    interviewers: {}
   })
 
-  const setDay = day => setState({...state, day});
+  const interviewersList = getInterviewersForDay(state, state.day);
 
-  const setDays = (days) => {
-    setState(prev => ({...prev, days}))
-  }
+  const dailyAppointments = getAppointmentsForDay(state, state.day);
+  const schedule = dailyAppointments.map((appointment) => {
+    const interview = getInterview(state, appointment.interview);
+    console.log(appointment)
+    console.log(state.interviewers)
 
-  useEffect( () => {
-    axios.get('/api/days').then(res => {
-      setDays(res.data)
-    })
-  }, [])
-
-  const appointmentsRenderer = appointments.map(appointment => {
     return (
       <Appointment
       key = {appointment.id}
       {...appointment}
+      interview = {interview}
+      interviewers = {interviewersList}
       />
     )
   })
+
+
+    
+  const setDay = day => setState({...state, day});
+
+  useEffect( () => {
+    Promise.all([
+      axios.get('/api/days'),
+      axios.get('/api/appointments'),
+      axios.get('/api/interviewers')
+    ]).then(all => {
+      setState(prev => (
+      {...prev, days:[...all[0].data], 
+      appointments:{...all[1].data}, interviewers:all[2].data}))
+      console.log(all[2].data)
+    })
+  }, [])
 
   return (
     <main className="layout">
@@ -89,10 +71,9 @@ export default function Application(props) {
         src="images/lhl.png"
         alt="Lighthouse Labs"
     />
-        {/* Replace this with the sidebar elements during the "Project Setup & Familiarity" activity. */}
       </section>
       <section className="schedule">
-        {appointmentsRenderer}
+        {schedule}
       </section>
     </main>
   );
