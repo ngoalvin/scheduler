@@ -19,7 +19,7 @@ export default function Application(props) {
   const interviewersList = getInterviewersForDay(state, state.day);
   
   const dailyAppointments = getAppointmentsForDay(state, state.day);
-  
+
   const schedule = dailyAppointments.map((appointment) => {
     const interview = getInterview(state, appointment.interview);
     return (
@@ -58,6 +58,7 @@ export default function Application(props) {
       </section>
       <section className="schedule">
         {schedule}
+        <Appointment key="last" time="5pm"/>
       </section>
     </main>
   );
