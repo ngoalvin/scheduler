@@ -12,23 +12,21 @@ export default function useApplicationData() {
 
   const setDay = day => setState({...state, day});
 
-  const findDayIndex = function(days) {
-    for (let i = 0; i < days.length; i++) {
-      if (days[i].name === state.day) {
-        return i;
+  const updateDays = function (id, appointments) {
+    const days = state.days.map((day) => {
+      if (day.appointments.includes(id)) {
+        return {...day, spots: day.appointments.filter((appointmentId) => {
+         return (appointments[appointmentId].interview === null)
+        }).length }
+      } else {
+        return day;
       }
-    }
-  }
-  const copyDayArr = (days) => {
-    const arr = [];
-    for (let day of days) {
-      const copy = {...day}
-      arr.push(copy);
-    }
-    return arr;
+    })
+    return days
   }
 
   const bookInterview = function(id, interview) {
+
     const appointment = {
       ...state.appointments[id],
       interview: { ...interview }
@@ -38,22 +36,21 @@ export default function useApplicationData() {
       [id]: appointment
     };
 
-    const index = findDayIndex(state.days)
-    const newDayArr = copyDayArr(state.days)
-    newDayArr[index].spots -= 1;
+    const days = updateDays(id, appointments)
 
     return axios.put(`api/appointments/${id}`, {interview})
     .then(() => {
       setState({
         ...state,
         appointments,
-        days:newDayArr
+        days
       });
     })
   }
 
 
   const cancelInterview = function(id) {
+
     const appointment = { 
       ...state.appointments[id],
       interview: null
@@ -63,14 +60,12 @@ export default function useApplicationData() {
       [id]: appointment
     };
 
-    const index = findDayIndex(state.days)
-    const newDayArr = copyDayArr(state.days)
-    newDayArr[index].spots += 1;
+    const days = updateDays(id, appointments)
 
     return axios.delete(`api/appointments/${id}`).then(() => { setState({
       ...state,
       appointments,
-      days:newDayArr
+      days
     })
   })
   }
