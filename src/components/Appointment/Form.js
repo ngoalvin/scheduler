@@ -21,7 +21,11 @@ export default function Form(props) {
 
   const onSubmit = (event) => {
     event.preventDefault();
-    onSave(name, interviewer);
+    if (name && interviewer) {
+      onSave(name, interviewer);
+    } else {
+      cancel();
+    }
   }
 
 
