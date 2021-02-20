@@ -1,49 +1,75 @@
-import { useState, useEffect } from "react";
+import { useEffect, useReducer } from "react";
 import axios from "axios";
 
-export default function useApplicationData() {
 
-  const [state, setState] = useState({
+const updateDays = function (id, appointments, state) {
+  const days = state.days.map((day) => {
+    if (day.appointments.includes(id)) {
+      return {...day, spots: day.appointments.filter((appointmentId) => {
+       return (appointments[appointmentId].interview === null)
+      }).length }
+    } else {
+      return day;
+    }
+  })
+  return days
+}
+
+const SET_DAY = "SET_DAY";
+const SET_APPLICATION_DATA = "SET_APPLICATION_DATA";
+const SET_INTERVIEW = "SET_INTERVIEW";
+
+function reducer(state, action) {
+  switch (action.type) {
+    case SET_DAY:
+      return { ...state, day: action.value }
+    case SET_APPLICATION_DATA:
+      return { ...state, ...action.value }
+    case SET_INTERVIEW: {
+      const interview = action.value.interview ? {...action.value.interview} : null;
+
+      const appointment = {
+        ...action.value.state.appointments[action.value.id],
+        interview
+      };
+      const appointments = {
+        ...action.value.state.appointments,
+        [action.value.id]: appointment
+      };
+      const days = updateDays(action.value.id, appointments, action.value.state)
+      return {...action.value.state, appointments, days}
+    }
+    default:
+      throw new Error(
+        `Tried to reduce with unsupported action type: ${action.type}`
+      );
+  }
+}
+
+export default function useApplicationData() {
+  
+
+  const [state, dispatch] = useReducer(reducer, {
     day: "Monday",
     days: [],
     appointments: {},
     interviewers: {}
   })
 
-  const setDay = day => setState({...state, day});
+  const setDay = day => dispatch({ type: SET_DAY, value: day })
 
-  const updateDays = function (id, appointments) {
-    const days = state.days.map((day) => {
-      if (day.appointments.includes(id)) {
-        return {...day, spots: day.appointments.filter((appointmentId) => {
-         return (appointments[appointmentId].interview === null)
-        }).length }
-      } else {
-        return day;
-      }
-    })
-    return days
-  }
 
   const bookInterview = function(id, interview) {
 
-    const appointment = {
-      ...state.appointments[id],
-      interview: { ...interview }
-    };
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment
-    };
-
-    const days = updateDays(id, appointments)
-
     return axios.put(`api/appointments/${id}`, {interview})
     .then(() => {
-      setState({
-        ...state,
-        appointments,
-        days
+      dispatch({
+        type: SET_INTERVIEW,
+        value: {
+          state,
+          id,
+          interview
+        }
       });
     })
   }
@@ -51,23 +77,15 @@ export default function useApplicationData() {
 
   const cancelInterview = function(id) {
 
-    const appointment = { 
-      ...state.appointments[id],
-      interview: null
-    };
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment
-    };
-
-    const days = updateDays(id, appointments)
-
-    return axios.delete(`api/appointments/${id}`).then(() => { setState({
-      ...state,
-      appointments,
-      days
+    return axios.delete(`api/appointments/${id}`).then(() => { 
+      dispatch({
+        type: SET_INTERVIEW,
+        value: {
+          state,
+          id
+        }
+      })
     })
-  })
   }
 
   useEffect( () => {
@@ -76,10 +94,13 @@ export default function useApplicationData() {
       axios.get('/api/appointments'),
       axios.get('/api/interviewers')
     ]).then(all => {
-      setState(prev => (
-      {...prev, days:[...all[0].data], 
-      appointments:{...all[1].data}, interviewers:all[2].data}))
-      console.log(all[2].data)
+
+      dispatch({type: SET_APPLICATION_DATA, 
+        value: {
+          days:[...all[0].data],
+          appointments: {...all[1].data},
+          interviewers:all[2].data
+      }})
     })
   }, [])
 
