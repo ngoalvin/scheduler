@@ -1,7 +1,6 @@
 import { useEffect, useReducer } from "react";
 import axios from "axios";
 
-
 const updateDays = function (id, appointments, state) {
   const days = state.days.map((day) => {
     if (day.appointments.includes(id)) {
@@ -29,15 +28,15 @@ function reducer(state, action) {
       const interview = action.value.interview ? {...action.value.interview} : null;
 
       const appointment = {
-        ...action.value.state.appointments[action.value.id],
+        ...state.appointments[action.value.id],
         interview
       };
       const appointments = {
-        ...action.value.state.appointments,
+        ...state.appointments,
         [action.value.id]: appointment
       };
-      const days = updateDays(action.value.id, appointments, action.value.state)
-      return {...action.value.state, appointments, days}
+      const days = updateDays(action.value.id, appointments, state)
+      return {...state, appointments, days}
     }
     default:
       throw new Error(
@@ -66,7 +65,6 @@ export default function useApplicationData() {
       dispatch({
         type: SET_INTERVIEW,
         value: {
-          state,
           id,
           interview
         }
@@ -81,7 +79,6 @@ export default function useApplicationData() {
       dispatch({
         type: SET_INTERVIEW,
         value: {
-          state,
           id
         }
       })
@@ -102,6 +99,25 @@ export default function useApplicationData() {
           interviewers:all[2].data
       }})
     })
+    const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL)
+
+    webSocket.onopen = function() {
+      webSocket.send("ping")
+    }
+
+    webSocket.onmessage = function(event) {
+      const interviewData = JSON.parse(event.data)
+      console.log(interviewData)
+      if (interviewData.type === SET_INTERVIEW) {
+        dispatch({
+          type: SET_INTERVIEW,
+          value: {
+            id : interviewData.id,
+            interview : interviewData.interview
+          }
+        })
+      }
+    }
   }, [])
 
 
