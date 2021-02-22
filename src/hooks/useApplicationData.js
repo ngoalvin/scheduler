@@ -107,7 +107,6 @@ export default function useApplicationData() {
 
     webSocket.onmessage = function(event) {
       const interviewData = JSON.parse(event.data)
-      console.log(interviewData)
       if (interviewData.type === SET_INTERVIEW) {
         dispatch({
           type: SET_INTERVIEW,
