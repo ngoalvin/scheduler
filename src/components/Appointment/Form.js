@@ -9,7 +9,6 @@ export default function Form(props) {
   const [name, setName] = useState(props.name || "");
   const [interviewer, setInterviewer] = useState(props.interviewer || null);
   const [error, setError] = useState("");
-
   const reset =  () => {
     setName('');
     setInterviewer('');
@@ -22,15 +21,15 @@ export default function Form(props) {
 
   const onSubmit = (event) => {
     event.preventDefault();
-    // if (!name || !interviewer) {
-    //   const errorMessage = !name ? "Student name cannot be blank." : "You must select an interviewer.";
-    //   setError(errorMessage)
-    //   return;
-    // }
-    if (name === "") {
-      setError("Student name cannot be blank");
+    if (!name || !interviewer) {
+      const errorMessage = !name ? "Student name cannot be blank." : "You must select an interviewer.";
+      setError(errorMessage)
       return;
     }
+    // if (name === "") {
+    //   setError("Student name cannot be blank");
+    //   return;
+    // }
     setError("");
     onSave(name, interviewer);
   }
