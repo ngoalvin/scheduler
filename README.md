@@ -21,3 +21,8 @@ npm test
 ```sh
 npm run storybook
 ```
+
+## Screenshots
+
+!["appointment form"](https://github.com/ngoalvin/scheduler/blob/master/docs/appointment-form.png?raw=true)
+
