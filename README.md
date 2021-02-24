@@ -22,6 +22,12 @@ npm test
 npm run storybook
 ```
 
+## Websockets
+
+```sh
+Multiple Browsers update automatically without refreshing
+```
+
 ## Screenshots
 
 !["home page"](https://github.com/ngoalvin/scheduler/blob/master/docs/home.png?raw=true)
