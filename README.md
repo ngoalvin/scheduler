@@ -24,5 +24,6 @@ npm run storybook
 
 ## Screenshots
 
+!["home page"](https://github.com/ngoalvin/scheduler/blob/master/docs/home.png?raw=true)
 !["appointment form"](https://github.com/ngoalvin/scheduler/blob/master/docs/appointment-form.png?raw=true)
 
